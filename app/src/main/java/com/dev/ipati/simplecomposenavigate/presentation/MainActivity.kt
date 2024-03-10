@@ -1,12 +1,16 @@
 package com.dev.ipati.simplecomposenavigate.presentation
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -34,6 +38,7 @@ class MainActivity : ComponentActivity() {
                 val hasMenuOnBottom = menu.value.find { it.route == currentRoute }
                 mainViewModel.setShowHideBottomBar(hasMenuOnBottom != null)
                 appNavigator.setUpNavHost(navController)
+                ObserveResult()
                 Scaffold(bottomBar = {
                     BottomNavigationBar(menu, showHideBottomBar)
                 }) {
@@ -45,5 +50,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    @Composable
+    private fun ObserveResult() {
+        val navBackStackEntry by appNavigator.getNavHost().currentBackStackEntryAsState()
+        val resultState =
+            navBackStackEntry?.savedStateHandle?.getStateFlow<Bundle>(
+                "message",
+                Bundle.EMPTY
+            )?.collectAsState()
+        LaunchedEffect(resultState?.value, block = {
+            val result = resultState?.value?.getString("test")
+            result.takeIf { !it.isNullOrEmpty() }?.let {
+                Toast.makeText(this@MainActivity, result, Toast.LENGTH_SHORT)
+                    .show()
+                navBackStackEntry?.savedStateHandle?.remove<Bundle>("message")
+            }
+        })
     }
 }
