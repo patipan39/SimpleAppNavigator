@@ -1,5 +1,6 @@
-package com.dev.ipati.simplecomposenavigate.presentation
+package com.dev.ipati.simplecomposenavigate.presentation.login
 
+import android.os.Bundle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,18 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.dev.ipati.simplecomposenavigate.core.AppNavigator
-import com.dev.ipati.simplecomposenavigate.core.LoginGraph
-import com.dev.ipati.simplecomposenavigate.core.NavigateOption
 import org.koin.androidx.compose.get
 
 @Composable
-fun Home() {
+fun Login() {
     val appNavigator = get<AppNavigator>()
-    BaseHome(appNavigator)
+    BaseLogin(appNavigator)
 }
 
 @Composable
-fun BaseHome(appNavigator: AppNavigator? = null) {
+fun BaseLogin(appNavigator: AppNavigator? = null) {
     Scaffold(modifier = Modifier.fillMaxSize()) {
         Box(
             contentAlignment = Alignment.Center,
@@ -34,19 +33,27 @@ fun BaseHome(appNavigator: AppNavigator? = null) {
                 Text(
                     modifier = Modifier
                         .padding(it),
-                    text = "Home Page",
+                    text = "Login Page",
                     textAlign = TextAlign.Center
                 )
                 Button(onClick = {
-                    appNavigator?.push(NavigateOption.Route(LoginGraph.LoginDestination.route))
+                    appNavigator?.pop()
                 }) {
-                    Text(text = "Navigate Route")
+                    Text(text = "Back Button")
                 }
 
                 Button(onClick = {
-                    appNavigator?.push(NavigateOption.DeepLink(LoginGraph.LoginDestination.deepLink))
+                    appNavigator?.popAll(true)
                 }) {
-                    Text(text = "Navigate DeepLink")
+                    Text(text = "Pop All")
+                }
+
+                Button(onClick = {
+                    appNavigator?.popWithResult("message", Bundle().apply {
+                        putString("test", "Result show")
+                    })
+                }) {
+                    Text(text = "Pop With Result")
                 }
             }
         }
@@ -55,6 +62,6 @@ fun BaseHome(appNavigator: AppNavigator? = null) {
 
 @Preview
 @Composable
-fun PreviewPage1() {
-    BaseHome()
+fun PreviewLogin() {
+    BaseLogin()
 }

@@ -5,11 +5,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.navigation.NavGraph
+import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import org.koin.android.BuildConfig
 
 interface AppNavigator {
     fun setUpNavHost(navHost: NavHostController): NavHostController?
+    fun getNavHost(): NavHostController
     fun push(navigate: NavigateOption)
     fun pop()
     fun popWithResult(key: String, bundle: Bundle)
@@ -30,6 +32,8 @@ class AppNavigatorImpl : AppNavigator {
         this.navHost = navHost
         return this.navHost
     }
+
+    override fun getNavHost(): NavHostController = navHost!!
 
     override fun push(navigate: NavigateOption) {
         when (navigate) {

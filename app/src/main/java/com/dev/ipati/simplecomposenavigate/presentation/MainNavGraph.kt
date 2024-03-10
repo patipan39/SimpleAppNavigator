@@ -1,9 +1,6 @@
 package com.dev.ipati.simplecomposenavigate.presentation
 
-import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -13,47 +10,55 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import com.dev.ipati.simplecomposenavigate.core.HomeGraph
 import com.dev.ipati.simplecomposenavigate.core.LoginGraph
-import org.koin.androidx.compose.get
+import com.dev.ipati.simplecomposenavigate.presentation.home.Home
+import com.dev.ipati.simplecomposenavigate.presentation.login.Login
+import com.dev.ipati.simplecomposenavigate.presentation.profile.Profile
+import com.dev.ipati.simplecomposenavigate.presentation.search.Search
 
 @Composable
 fun MainNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = HomeGraph.NameGraph.name
+        startDestination = HomeGraph.HomeDestination.route
     ) {
-        //declare nav graph
-        homeGraph()
+        bottomNavigationGraph()
         loginGraph()
     }
 }
 
-fun NavGraphBuilder.homeGraph() {
-    //Split 1 Graph
-    navigation(
-        HomeGraph.HomeDestination.startDestination,
-        HomeGraph.NameGraph.name
+fun NavGraphBuilder.bottomNavigationGraph() {
+    //split 1 Graph
+    composable(
+        route = HomeGraph.HomeDestination.route,
+        deepLinks = listOf(navDeepLink {
+            uriPattern = HomeGraph.HomeDestination.deepLink
+            action = Intent.ACTION_VIEW
+        })
     ) {
-        composable(
-            route = HomeGraph.HomeDestination.route,
-            deepLinks = listOf(navDeepLink {
-                uriPattern = HomeGraph.HomeDestination.deepLink
-                action = Intent.ACTION_VIEW
-            })
-        ) {
-            val bundle = it.savedStateHandle.get<Bundle>("message")
-            bundle?.getString("test")?.let { message ->
-                it.savedStateHandle.clearSavedStateProvider("message")
-                Toast.makeText(get<Context>(), message, Toast.LENGTH_SHORT).show()
-            }
-            Home()
-        }
+        Home()
+    }
+    composable(
+        route = HomeGraph.SearchDestination.route,
+        deepLinks = listOf(navDeepLink {
+            uriPattern = HomeGraph.SearchDestination.deepLink
+            action = Intent.ACTION_VIEW
+        })
+    ) {
+        Search()
+    }
+
+    composable(route = HomeGraph.ProfileDestination.route, deepLinks = listOf(navDeepLink {
+        uriPattern = HomeGraph.ProfileDestination.deepLink
+        action = Intent.ACTION_VIEW
+    })) {
+        Profile()
     }
 }
 
 fun NavGraphBuilder.loginGraph() {
-    //Split 1 Graph
+    //nested 1 graph
     navigation(
-        LoginGraph.LoginDestination.startDestination,
+        LoginGraph.LoginDestination.route,
         LoginGraph.NameGraph.name
     ) {
         composable(

@@ -1,6 +1,5 @@
-package com.dev.ipati.simplecomposenavigate.presentation
+package com.dev.ipati.simplecomposenavigate.presentation.profile
 
-import android.os.Bundle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,13 +16,13 @@ import com.dev.ipati.simplecomposenavigate.core.AppNavigator
 import org.koin.androidx.compose.get
 
 @Composable
-fun Login() {
+fun Profile() {
     val appNavigator = get<AppNavigator>()
-    BaseLogin(appNavigator)
+    BaseProfile(appNavigator)
 }
 
 @Composable
-fun BaseLogin(appNavigator: AppNavigator? = null) {
+fun BaseProfile(appNavigator: AppNavigator? = null) {
     Scaffold(modifier = Modifier.fillMaxSize()) {
         Box(
             contentAlignment = Alignment.Center,
@@ -33,27 +32,13 @@ fun BaseLogin(appNavigator: AppNavigator? = null) {
                 Text(
                     modifier = Modifier
                         .padding(it),
-                    text = "Login Page",
+                    text = "Profile Page",
                     textAlign = TextAlign.Center
                 )
                 Button(onClick = {
                     appNavigator?.pop()
                 }) {
                     Text(text = "Back Button")
-                }
-
-                Button(onClick = {
-                    appNavigator?.popAll(true)
-                }) {
-                    Text(text = "Pop All")
-                }
-
-                Button(onClick = {
-                    appNavigator?.popWithResult("message", Bundle().apply {
-                        putString("test", "Result show")
-                    })
-                }) {
-                    Text(text = "Pop With Result")
                 }
             }
         }
@@ -63,5 +48,5 @@ fun BaseLogin(appNavigator: AppNavigator? = null) {
 @Preview
 @Composable
 fun PreviewLogin() {
-    BaseLogin()
+    BaseProfile()
 }
