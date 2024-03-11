@@ -4,15 +4,27 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.NavGraph
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.dev.ipati.simplecomposenavigate.presentation.middleware.MiddleWare
+import com.dev.ipati.simplecomposenavigate.presentation.middleware.MiddleWareManager
 import org.koin.android.BuildConfig
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 interface AppNavigator {
     fun setUpNavHost(navHost: NavHostController): NavHostController?
     fun getNavHost(): NavHostController
-    fun push(navigate: NavigateOption)
+
+    fun push(
+        navigate: NavigateOption,
+        middleWare: MiddleWare? = null
+    )
+
     fun pop()
     fun popWithResult(key: String, bundle: Bundle)
     fun popAll(isPopInclusive: Boolean = false)
@@ -22,11 +34,15 @@ interface AppNavigator {
     fun hasDeepLinkInStack(url: String): Boolean
     fun hasRouteInStack(route: String): Boolean
     fun getRootDestinationId(): Int
+
+    @Composable
+    fun <T> SetComposeListener(key: String, onResult: ((T?) -> Unit))
 }
 
 @SuppressLint("RestrictedApi")
-class AppNavigatorImpl : AppNavigator {
+class AppNavigatorImpl : AppNavigator, KoinComponent {
     private var navHost: NavHostController? = null
+    private val middleWareManager: MiddleWareManager by inject()
 
     override fun setUpNavHost(navHost: NavHostController): NavHostController? {
         this.navHost = navHost
@@ -35,16 +51,21 @@ class AppNavigatorImpl : AppNavigator {
 
     override fun getNavHost(): NavHostController = navHost!!
 
-    override fun push(navigate: NavigateOption) {
-        when (navigate) {
-            is NavigateOption.Route -> {
-                navHost?.navigate(route = navigate.routeName)
-            }
+    override fun push(
+        navigate: NavigateOption,
+        middleWare: MiddleWare?
+    ) {
+        middleWareManager.checkRequiredFeature(middleWare, onSkipMiddleWare = {
+            when (navigate) {
+                is NavigateOption.Route -> {
+                    navHost?.navigate(route = navigate.routeName, navigate.navOptions)
+                }
 
-            is NavigateOption.DeepLink -> {
-                navHost?.navigate(deepLink = Uri.parse(navigate.deeplink))
+                is NavigateOption.DeepLink -> {
+                    navHost?.navigate(deepLink = Uri.parse(navigate.deeplink), navigate.navOptions)
+                }
             }
-        }
+        })
     }
 
     override fun pop() {
@@ -140,6 +161,19 @@ class AppNavigatorImpl : AppNavigator {
             toast(e)
         }
         return rootDestinationId ?: -1
+    }
+
+    @Composable
+    override fun <T> SetComposeListener(key: String, onResult: (T?) -> Unit) {
+        val lifecycle = LocalLifecycleOwner.current
+        val navBackStackEntry by navHost!!.currentBackStackEntryAsState()
+        val resultState =
+            navBackStackEntry?.savedStateHandle?.getLiveData<T>(key = key)
+        resultState?.observe(lifecycle) {
+            onResult(it)
+        }
+        navBackStackEntry?.savedStateHandle?.remove<T>(key = key)
+        resultState?.removeObservers(lifecycle)
     }
 
     private fun toast(e: Exception) {

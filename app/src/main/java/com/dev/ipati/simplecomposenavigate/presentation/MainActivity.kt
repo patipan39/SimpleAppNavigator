@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -31,7 +29,7 @@ class MainActivity : ComponentActivity() {
             SimpleComposeNavigateTheme {
                 val mainViewModel: MainViewModel = getViewModel()
                 val menu = mainViewModel.showBottomMenu.collectAsState(initial = emptyList())
-                val showHideBottomBar = mainViewModel.shouldShowHide.collectAsState(initial = true)
+                val showHideBottomBar = mainViewModel.shouldShowHide.collectAsState(initial = false)
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -54,19 +52,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun ObserveResult() {
-        val navBackStackEntry by appNavigator.getNavHost().currentBackStackEntryAsState()
-        val resultState =
-            navBackStackEntry?.savedStateHandle?.getStateFlow<Bundle>(
-                "message",
-                Bundle.EMPTY
-            )?.collectAsState()
-        LaunchedEffect(resultState?.value, block = {
-            val result = resultState?.value?.getString("test")
-            result.takeIf { !it.isNullOrEmpty() }?.let {
-                Toast.makeText(this@MainActivity, result, Toast.LENGTH_SHORT)
-                    .show()
-                navBackStackEntry?.savedStateHandle?.remove<Bundle>("message")
-            }
-        })
+        appNavigator.SetComposeListener<Bundle>(key = "message") {
+            val resultState = it?.getString("test")
+            Toast.makeText(this@MainActivity, resultState, Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 }

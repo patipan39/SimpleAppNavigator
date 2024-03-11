@@ -11,12 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navOptions
 import com.dev.ipati.simplecomposenavigate.core.AppNavigator
+import com.dev.ipati.simplecomposenavigate.core.HomeGraph
+import com.dev.ipati.simplecomposenavigate.core.NavigateOption
+import com.dev.ipati.simplecomposenavigate.presentation.profile.ProfileMiddleWare
 import org.koin.androidx.compose.get
 
 @Composable
 fun BottomNavigationBar(menu: State<List<BottomNavItem>>?, showHideBottomBar: State<Boolean>) {
     val navController = get<AppNavigator>()
+    val profileMiddleWare = get<ProfileMiddleWare>()
     AnimatedVisibility(
         visible = showHideBottomBar.value,
         enter = slideInVertically { it },
@@ -28,14 +33,23 @@ fun BottomNavigationBar(menu: State<List<BottomNavItem>>?, showHideBottomBar: St
                 BottomNavigationItem(
                     selected = item.route == currentRoute,
                     onClick = {
-                        val navHostController = navController.getNavHost()
-                        navHostController.navigate(item.route) {
-                            popUpTo(navHostController.graph.startDestinationId) {
-                                saveState = true
+                        val middleWare = when (item.route) {
+                            HomeGraph.ProfileDestination.route -> {
+                                profileMiddleWare
                             }
-                            restoreState = true
-                            launchSingleTop = true
+
+                            else -> null
                         }
+                        navController.push(
+                            navigate = NavigateOption.Route(item.route, navOptions {
+                                popUpTo(navController.getNavHost().graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                restoreState = true
+                                launchSingleTop = true
+                            }),
+                            middleWare = middleWare
+                        )
                     },
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { Text(text = item.label) }

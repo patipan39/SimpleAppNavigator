@@ -19,9 +19,10 @@ import com.dev.ipati.simplecomposenavigate.presentation.search.Search
 fun MainNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = HomeGraph.HomeDestination.route
+        startDestination = HomeGraph.SplashDestination.route
     ) {
         bottomNavigationGraph()
+        splash()
         loginGraph()
     }
 }
@@ -46,12 +47,27 @@ fun NavGraphBuilder.bottomNavigationGraph() {
     ) {
         Search()
     }
-
-    composable(route = HomeGraph.ProfileDestination.route, deepLinks = listOf(navDeepLink {
-        uriPattern = HomeGraph.ProfileDestination.deepLink
-        action = Intent.ACTION_VIEW
-    })) {
+    composable(
+        route = HomeGraph.ProfileDestination.route,
+        deepLinks = listOf(navDeepLink {
+            uriPattern = HomeGraph.ProfileDestination.deepLink
+            action = Intent.ACTION_VIEW
+        })
+    ) {
         Profile()
+    }
+}
+
+fun NavGraphBuilder.splash() {
+    //should default hide navigation
+    composable(
+        route = HomeGraph.SplashDestination.route,
+        deepLinks = listOf(navDeepLink {
+            uriPattern = HomeGraph.SplashDestination.deepLink
+            action = Intent.ACTION_VIEW
+        })
+    ) {
+        Splash()
     }
 }
 

@@ -1,4 +1,4 @@
-package com.dev.ipati.simplecomposenavigate.presentation.profile
+package com.dev.ipati.simplecomposenavigate.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,22 +8,24 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.dev.ipati.simplecomposenavigate.core.AppNavigator
+import com.dev.ipati.simplecomposenavigate.core.HomeGraph
+import com.dev.ipati.simplecomposenavigate.core.NavigateOption
 import org.koin.androidx.compose.get
 
 @Composable
-fun Profile() {
+fun Splash() {
     val appNavigator = get<AppNavigator>()
-    BaseProfile(appNavigator)
+    BaseSplash(appNavigator)
 }
 
 @Composable
-fun BaseProfile(appNavigator: AppNavigator? = null) {
+fun BaseSplash(appNavigator: AppNavigator? = null) {
     Scaffold(modifier = Modifier.fillMaxSize()) {
         Box(
             contentAlignment = Alignment.Center,
@@ -33,13 +35,13 @@ fun BaseProfile(appNavigator: AppNavigator? = null) {
                 Text(
                     modifier = Modifier
                         .padding(it),
-                    text = "Profile Page",
+                    text = "Splash Page",
                     textAlign = TextAlign.Center
                 )
                 Button(onClick = {
-                    appNavigator?.pop()
+                    appNavigator?.push(NavigateOption.DeepLink(HomeGraph.HomeDestination.deepLink))
                 }) {
-                    Text(text = "Back Button")
+                    Text(text = "Go to home page")
                 }
             }
         }
@@ -49,5 +51,5 @@ fun BaseProfile(appNavigator: AppNavigator? = null) {
 @Preview
 @Composable
 fun PreviewLogin() {
-    BaseProfile()
+    BaseSplash()
 }

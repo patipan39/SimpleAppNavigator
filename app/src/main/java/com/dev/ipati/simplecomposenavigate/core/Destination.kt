@@ -1,6 +1,7 @@
 package com.dev.ipati.simplecomposenavigate.core
 
 object Destinations {
+    const val Splash = "splash"
     const val Home = "home"
     const val Search = "search"
     const val Profile = "profile"
@@ -10,6 +11,15 @@ object Destinations {
 sealed class HomeGraph {
     object NameGraph {
         const val name = "HomeGraph"
+    }
+
+    object NameGraphSplash {
+        const val name = "SplashGraph"
+    }
+
+    data object SplashDestination {
+        const val route: String = Destinations.Splash
+        const val deepLink: String = "example://compose/splash"
     }
 
     data object HomeDestination {
