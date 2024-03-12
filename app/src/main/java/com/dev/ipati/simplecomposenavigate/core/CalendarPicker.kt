@@ -75,9 +75,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
@@ -222,7 +220,7 @@ fun ModalBottomCalendar(
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = rememberRipple(
-                                                color = colorResource(id = CalendarColor.Primary400),
+                                                color = Color(CalendarColor.Primary400),
                                             )
                                         ) {
                                             coroutineScope.launch {
@@ -231,7 +229,7 @@ fun ModalBottomCalendar(
                                         }
                                         .padding(horizontal = 12.dp),
                                     text = CalendarMessage.CANCEL,
-                                    color = colorResource(id = CalendarColor.Primary400),
+                                    color = Color(CalendarColor.Primary400),
                                     style = AmazeTypography.Body1,
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -241,7 +239,7 @@ fun ModalBottomCalendar(
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = rememberRipple(
-                                                color = colorResource(id = CalendarColor.Primary400),
+                                                color = Color(CalendarColor.Primary400),
                                             )
                                         ) {
                                             coroutineScope.launch {
@@ -255,7 +253,7 @@ fun ModalBottomCalendar(
                                         }
                                         .padding(horizontal = 12.dp),
                                     text = CalendarMessage.OK,
-                                    color = colorResource(id = CalendarColor.Primary400),
+                                    color = Color(CalendarColor.Primary400),
                                     style = AmazeTypography.Body1,
                                 )
                             }
@@ -307,7 +305,7 @@ fun CalendarView(
         mutableStateOf(false)
     },
 ) {
-    val colorPrimary = colorResource(id = CalendarColor.Primary400)
+    val colorPrimary = Color(CalendarColor.Primary400)
     val colorSecondary = Color(0xFFDAECFE)
     val buttonSize = 24.dp
     val maxValue = Int.MAX_VALUE
@@ -332,7 +330,7 @@ fun CalendarView(
         initialPage = startPage,
         initialPageOffsetFraction = 0f
     ) {
-        0
+        startPage
     }
     val coroutineScope = rememberCoroutineScope()
     var selectedDate by selectedDateState
@@ -615,7 +613,7 @@ private fun Header(modifier: Modifier) {
             ) {
                 Text(
                     text = it,
-                    color = colorResource(id = CalendarColor.Natural200),
+                    color = Color(CalendarColor.Natural200),
                     textAlign = TextAlign.Center,
                     style = AmazeTypography.Body1,
                     modifier = Modifier.align(Alignment.Center),
@@ -784,12 +782,12 @@ object AmazeTypography {
 
     @Composable
     private fun BaseTypographyRegular() = TextStyle(
-        color = colorResource(id = CalendarColor.Natural400)
+        color = Color(CalendarColor.Natural400)
     )
 
     @Composable
     private fun BaseTypographyBold() = TextStyle(
-        color = colorResource(id = CalendarColor.Natural400)
+        color = Color(CalendarColor.Natural400)
     )
 }
 
@@ -797,9 +795,9 @@ object AmazeTypography {
 fun Dp.toSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 object CalendarColor {
-    val Primary400: Int = "2E6CF7".toColorInt()
-    val Natural200: Int = "A7A7A7".toColorInt()
-    val Natural400: Int = "444444".toColorInt()
+    val Primary400: Int = "#2E6CF7".toColorInt()
+    val Natural200: Int = "#A7A7A7".toColorInt()
+    val Natural400: Int = "#444444".toColorInt()
 }
 
 object CalendarMessage {
