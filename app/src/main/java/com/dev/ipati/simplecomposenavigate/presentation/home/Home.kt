@@ -14,8 +14,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.dev.ipati.simplecomposenavigate.core.AppNavigator
 import com.dev.ipati.simplecomposenavigate.core.LoginGraph
+import com.dev.ipati.simplecomposenavigate.core.ModalBottomCalendar
 import com.dev.ipati.simplecomposenavigate.core.NavigateOption
 import org.koin.androidx.compose.get
+import java.util.Calendar
 
 @Composable
 fun Home() {
@@ -33,6 +35,15 @@ fun BaseHome(
             modifier = Modifier.fillMaxSize()
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                ModalBottomCalendar("ระบุวันเกิด",
+                    inputCalendar = Calendar.getInstance(),
+                    onDismissCallBack = {
+//                        dismiss()
+                    },
+                    onDateSelectedCallBack = {
+//                        listener?.onDateSelectedCallBack(it)
+                    }
+                )
                 Text(
                     modifier = Modifier
                         .padding(it),
