@@ -3,6 +3,7 @@ package com.dev.ipati.simplecomposenavigate.core
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,26 +20,29 @@ import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.SnapPositionInLayout
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +57,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -305,13 +310,8 @@ fun CalendarView(
         mutableStateOf(false)
     },
 ) {
-    val colorPrimary = Color(CalendarColor.Primary400)
-    val colorSecondary = Color(0xFFDAECFE)
-    val buttonSize = 24.dp
     val maxValue = Int.MAX_VALUE
     val startPage = maxValue / 2
-    val monthList = CalendarMessage.monthList
-    val yearList = MutableList(4000) { (it + 1).toString() }
     val month = inputCalendar.get(Calendar.MONTH)
     val year = inputCalendar.get(Calendar.YEAR)
     val monthPickerIndex = remember {
@@ -335,13 +335,6 @@ fun CalendarView(
     val coroutineScope = rememberCoroutineScope()
     var selectedDate by selectedDateState
     var isShowMonthPicker by isShowMonthState
-    val angle: Float by animateFloatAsState(
-        targetValue = if (isShowMonthPicker) 90f else 0f,
-        animationSpec = tween(
-            durationMillis = 200,
-            easing = LinearEasing
-        )
-    )
 
     LaunchedEffect(Unit) {
         snapshotFlow { pagerState.currentPage }
@@ -374,213 +367,293 @@ fun CalendarView(
             .fillMaxWidth()
             .fillMaxHeight(),
     ) {
-        Column(modifier = Modifier) {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                val y = yearList[yearPickerIndex.intValue]
-                val m = monthList[monthPickerIndex.intValue]
-                Text(
-                    modifier = Modifier
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) {
-                            isShowMonthPicker = !isShowMonthPicker
-                        }
-                        .padding(8.dp),
-                    text = "$m $y",
-                    style = AmazeTypography.H4,
-                    textAlign = TextAlign.Center,
+                ShowSelectMonth(
+                    monthPickerIndex = monthPickerIndex,
+                    yearPickerIndex = yearPickerIndex,
+                    onShowPickerDate = {
+                        isShowMonthPicker = !isShowMonthPicker
+                    }
                 )
-                Icon(
-                    modifier = Modifier
-                        .rotate(angle)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) {
-                            coroutineScope.launch {
-                                isShowMonthPicker = !isShowMonthPicker
-                            }
-                        }
-                        .size(16.dp),
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    tint = Color(CalendarColor.Primary400),
-                    contentDescription = "",
-                )
-                Spacer(Modifier.weight(1f))
-                Icon(
-                    modifier = Modifier
-                        .alpha(if (isShowMonthPicker) 0f else 1f)
-                        .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
-                        .clickable(
-                            enabled = !isShowMonthPicker,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(
-                                bounded = false,
-                                color = colorPrimary,
-                            ),
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage - 1, 0f)
-                            }
-                        }
-                        .clipToBounds()
-                        .rotate(180f)
-                        .padding(all = 8.dp)
-                        .size(buttonSize),
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    tint = Color(CalendarColor.Primary400),
-                    contentDescription = "",
-                )
-                Icon(
-                    modifier = Modifier
-                        .alpha(if (isShowMonthPicker) 0f else 1f)
-                        .padding(top = 8.dp, bottom = 8.dp)
-                        .clickable(
-                            enabled = !isShowMonthPicker,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = rememberRipple(
-                                bounded = false,
-                                color = colorPrimary,
-                            ),
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1, 0f)
-                            }
-                        }
-                        .padding(all = 8.dp)
-                        .size(buttonSize),
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = Color(CalendarColor.Primary400)
+
+                CalendarDropDown(isShowMonthPicker = isShowMonthPicker) {
+                    coroutineScope.launch {
+                        isShowMonthPicker = !isShowMonthPicker
+                    }
+                }
+
+                CalendarController(isShowMonthPicker, onNext = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(pagerState.currentPage + 1, 0f)
+                    }
+                }, onPrevious = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(pagerState.currentPage - 1, 0f)
+                    }
+                })
+            }
+            // section calendar
+            Header(
+                Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            )
+
+            if (!isShowMonthPicker) {
+                CalendarHorizontalPager(
+                    pagerState,
+                    startPage,
+                    month,
+                    year,
+                    selectedDate,
+                ) { itemSelected ->
+                    selectedDate = itemSelected
+                }
+            } else {
+                ShowMonthPicker(
+                    monthPickerIndex = monthPickerIndex,
+                    yearPickerIndex = yearPickerIndex
                 )
             }
-            Box(
-                modifier = Modifier.weight(1f),
+        }
+    }
+}
+
+@Composable
+private fun ShowSelectMonth(
+    monthPickerIndex: MutableIntState,
+    yearPickerIndex: MutableIntState,
+    onShowPickerDate: (() -> Unit)? = null
+) {
+    val monthList = CalendarMessage.monthList
+    val yearList = MutableList(4000) { (it + 1).toString() }
+    val y = yearList[yearPickerIndex.intValue]
+    val m = monthList[monthPickerIndex.intValue]
+    Text(
+        modifier = Modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
             ) {
-                Column(modifier = Modifier) {
-                    Header(
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    )
-                    HorizontalPager(
-                        modifier = Modifier,
-                        state = pagerState,
-                        pageSpacing = 0.dp,
-                        userScrollEnabled = true,
-                        reverseLayout = false,
-                        contentPadding = PaddingValues(0.dp),
-                        beyondBoundsPageCount = 0,
-                        pageSize = PageSize.Fill,
-                        flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-                        key = null,
-                        pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-                            Orientation.Horizontal
-                        ),
-                        pageContent = {
-                            val pageEachIndex = it - startPage
-                            val calendarEach = getCalendar(1, month, year, pageEachIndex)
-                            val dayWeek = calendarEach.get(Calendar.DAY_OF_WEEK)
-                            val dayWeekIndex = dayWeek - 2
+                onShowPickerDate?.invoke()
+            }
+            .padding(8.dp),
+        text = "$m $y",
+        style = AmazeTypography.H4,
+        textAlign = TextAlign.Center,
+    )
+}
 
-                            val maxDay = calendarEach.getActualMaximum(Calendar.DAY_OF_MONTH)
-                            val offsetDay = maxDay + dayWeek - 1
-                            val maxRow = ceil(offsetDay / 7.0).toInt()
+@Composable
+private fun CalendarDropDown(
+    isShowMonthPicker: Boolean,
+    onShowPickerDate: (() -> Unit)? = null
+) {
+    val angle: Float by animateFloatAsState(
+        targetValue = if (isShowMonthPicker) 90f else 0f,
+        animationSpec = tween(
+            durationMillis = 200,
+            easing = LinearEasing
+        )
+    )
+    Icon(
+        modifier = Modifier
+            .rotate(angle)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) {
+                onShowPickerDate?.invoke()
+            }
+            .size(16.dp),
+        imageVector = Icons.Default.KeyboardArrowRight,
+        tint = Color(CalendarColor.Primary400),
+        contentDescription = "",
+    )
+}
 
-                            Column {
-                                for (row in 0 until maxRow) {
-                                    Row(
-                                        modifier = Modifier.weight(1f),
-                                    ) {
-                                        for (column in 0..6) {
-                                            val index = (column + (row * 7))
-                                            val day =
-                                                (index - dayWeekIndex).takeIf { it in 1..maxDay }
-                                            val itemCalendar = day?.let {
-                                                getCalendar(
-                                                    day,
-                                                    calendarEach.get(Calendar.MONTH),
-                                                    calendarEach.get(Calendar.YEAR),
-                                                    0,
-                                                )
-                                            }
-                                            val isMatch =
-                                                itemCalendar != null && selectedDate == itemCalendar
-                                            Box(
-                                                Modifier
-                                                    .aspectRatio(1f)
-                                                    .weight(1f)
-                                                    .fillMaxHeight()
-                                                    .fillMaxWidth()
-                                            ) {
-                                                var selectModify = Modifier
-                                                    .width(40.dp)
-                                                    .aspectRatio(1f)
-                                                    .align(Alignment.Center)
-                                                    .clip(CircleShape)
-                                                if (isMatch) {
-                                                    selectModify =
-                                                        selectModify.background(colorSecondary)
-                                                }
-                                                Box(modifier = selectModify)
-                                                Text(
-                                                    text = day?.toString().orEmpty(),
-                                                    color = if (isMatch) colorPrimary else Color.Black,
-                                                    textAlign = TextAlign.Center,
-                                                    style = AmazeTypography.Body1,
-                                                    modifier = Modifier
-                                                        .padding(all = 4.dp)
-                                                        .align(Alignment.Center)
-                                                        .clickable(
-                                                            interactionSource = remember { MutableInteractionSource() },
-                                                            indication = null,
-                                                        ) {
-                                                            if (itemCalendar != null) {
-                                                                selectedDate = itemCalendar
-                                                            }
-                                                        },
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-                    )
+@Composable
+private fun CalendarController(
+    isShowMonthPicker: Boolean,
+    onNext: (() -> Unit)? = null,
+    onPrevious: (() -> Unit)? = null
+) {
+    Row {
+        Spacer(Modifier.weight(1f))
+        Icon(
+            modifier = Modifier
+                .alpha(if (isShowMonthPicker) 0f else 1f)
+                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+                .clickable(
+                    enabled = !isShowMonthPicker,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(
+                        bounded = false,
+                        color = Color(CalendarColor.Primary400),
+                    ),
+                ) {
+                    onPrevious?.invoke()
                 }
-                if (isShowMonthPicker) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White)
-                            .padding(vertical = 24.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Row {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f),
-                            ) {
-                                CircularWheelPicker(monthList, monthPickerIndex)
+                .clipToBounds()
+                .rotate(180f)
+                .padding(all = 8.dp)
+                .size(24.dp),
+            imageVector = Icons.Default.KeyboardArrowRight,
+            tint = Color(CalendarColor.Primary400),
+            contentDescription = "",
+        )
+        Icon(
+            modifier = Modifier
+                .alpha(if (isShowMonthPicker) 0f else 1f)
+                .padding(top = 8.dp, bottom = 8.dp)
+                .clickable(
+                    enabled = !isShowMonthPicker,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(
+                        bounded = false,
+                        color = Color(CalendarColor.Primary400)
+                    ),
+                ) {
+                    onNext?.invoke()
+                }
+                .padding(all = 8.dp)
+                .size(24.dp),
+            imageVector = Icons.Default.KeyboardArrowRight,
+            contentDescription = null,
+            tint = Color(CalendarColor.Primary400)
+        )
+    }
+}
+
+@ExperimentalFoundationApi
+@Composable
+private fun CalendarHorizontalPager(
+    pagerState: PagerState,
+    startPage: Int,
+    month: Int,
+    year: Int,
+    selectedDate: Calendar,
+    onSelectDate: ((itemSelected: Calendar) -> Unit)? = null
+) {
+    Box(
+        modifier = Modifier,
+    ) {
+        HorizontalPager(
+            modifier = Modifier,
+            state = pagerState,
+            pageSpacing = 0.dp,
+            userScrollEnabled = true,
+            reverseLayout = false,
+            contentPadding = PaddingValues(0.dp),
+            beyondBoundsPageCount = 0,
+            pageSize = PageSize.Fill,
+            flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+            key = null,
+            pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+                Orientation.Horizontal
+            ),
+            pageContent = {
+                val pageEachIndex = it - startPage
+                val calendarEach = getCalendar(1, month, year, pageEachIndex)
+                val maxDayOfMonth = calendarEach.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val maxDayOfWeek = calendarEach.getActualMaximum(Calendar.DAY_OF_WEEK)
+                val dayWeek = calendarEach.get(Calendar.DAY_OF_WEEK)
+                val selectedMonth = selectedDate.get(Calendar.MONTH)
+                val currentMonth = calendarEach.get(Calendar.MONTH)
+                val selectedYear = selectedDate.get(Calendar.YEAR)
+                val currentYear = calendarEach.get(Calendar.YEAR)
+
+                val dayWeekIndex = dayWeek - 2
+                val offsetDay = maxDayOfMonth + dayWeek - 1
+                val maxRow = ceil(offsetDay / 7.0).toInt()
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(maxDayOfWeek),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items((maxRow + maxDayOfWeek) + maxDayOfMonth) { index ->
+                        val day =
+                            (index - dayWeekIndex).takeIf { it in 1..maxDayOfMonth }
+
+                        val isMatch =
+                            selectedDate.get(Calendar.DAY_OF_MONTH) == day
+                                    && currentMonth == selectedMonth
+                                    && currentYear == selectedYear
+
+                        Box(
+                            Modifier.wrapContentSize()
+                        ) {
+                            var selectModify = Modifier
+                                .size(30.dp)
+                                .align(Alignment.Center)
+                                .clip(CircleShape)
+                            if (isMatch) {
+                                selectModify =
+                                    selectModify.background(Color(CalendarColor.ColorSecond))
                             }
-                            Box(
+                            Box(modifier = selectModify)
+                            Text(
+                                text = day?.let { text -> "$text" } ?: "",
+                                color = if (isMatch) Color(CalendarColor.Primary400) else Color.Black,
+                                textAlign = TextAlign.Center,
+                                style = AmazeTypography.Body1,
                                 modifier = Modifier
-                                    .weight(1f),
-                            ) {
-                                CircularWheelPicker(
-                                    yearList, yearPickerIndex
-                                )
-                            }
+                                    .align(Alignment.Center)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        day?.let {
+                                            val itemCalendar = getCalendar(
+                                                it,
+                                                calendarEach.get(Calendar.MONTH),
+                                                calendarEach.get(Calendar.YEAR),
+                                                0,
+                                            )
+                                            onSelectDate?.invoke(itemCalendar)
+                                        }
+                                    },
+                            )
                         }
                     }
                 }
+            })
+    }
+}
+
+@Composable
+private fun ShowMonthPicker(
+    monthPickerIndex: MutableState<Int>,
+    yearPickerIndex: MutableIntState,
+) {
+    val yearList = MutableList(4000) { (it + 1).toString() }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(vertical = 24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row {
+            Box(
+                modifier = Modifier
+                    .weight(1f),
+            ) {
+                CircularWheelPicker(CalendarMessage.monthList, monthPickerIndex)
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f),
+            ) {
+                CircularWheelPicker(
+                    yearList, yearPickerIndex
+                )
             }
         }
     }
@@ -796,13 +869,14 @@ fun Dp.toSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 object CalendarColor {
     val Primary400: Int = "#2E6CF7".toColorInt()
+    val ColorSecond: Int = "#DAECFE".toColorInt()
     val Natural200: Int = "#A7A7A7".toColorInt()
     val Natural400: Int = "#444444".toColorInt()
 }
 
 object CalendarMessage {
-    val OK = "Ok"
-    val CANCEL = "Cancel"
+    const val OK = "Ok"
+    const val CANCEL = "Cancel"
 
     val dayList = listOf(
         "อา.",
