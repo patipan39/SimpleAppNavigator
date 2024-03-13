@@ -200,8 +200,13 @@ fun ModalBottomCalendar(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(top = 24.dp, start = 4.dp, end = 4.dp),
+                    .height(400.dp)
+                    .padding(
+                        top = 24.dp,
+                        bottom = 64.dp,
+                        start = 4.dp,
+                        end = 4.dp
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Column {
@@ -641,8 +646,7 @@ private fun ShowMonthPicker(
     val yearList = MutableList(4000) { (it + 1).toString() }
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
+            .fillMaxSize()
             .background(Color.White)
             .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center,
