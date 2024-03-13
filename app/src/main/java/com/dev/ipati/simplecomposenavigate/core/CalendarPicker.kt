@@ -200,8 +200,8 @@ fun ModalBottomCalendar(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
-                    .padding(top = 24.dp, bottom = 64.dp, start = 4.dp, end = 4.dp),
+                    .wrapContentHeight()
+                    .padding(top = 24.dp, start = 4.dp, end = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column {
@@ -273,7 +273,7 @@ private fun CalendarHeader(
                         onHide?.invoke()
                     }
                     .padding(horizontal = 12.dp),
-                text = CalendarMessage.CANCEL,
+                text = CalendarString.CANCEL,
                 color = Color(CalendarColor.Primary400),
                 style = AmazeTypography.Body1,
             )
@@ -290,7 +290,7 @@ private fun CalendarHeader(
                         onAccepted?.invoke()
                     }
                     .padding(horizontal = 12.dp),
-                text = CalendarMessage.OK,
+                text = CalendarString.OK,
                 color = Color(CalendarColor.Primary400),
                 style = AmazeTypography.Body1,
             )
@@ -375,7 +375,7 @@ fun CalendarView(
         modifier = Modifier
             .background(color = Color.White)
             .fillMaxWidth()
-            .fillMaxHeight(),
+            .wrapContentHeight(),
     ) {
         Column {
             Row(
@@ -441,7 +441,7 @@ private fun ShowSelectMonth(
     yearPickerIndex: MutableIntState,
     onShowPickerDate: (() -> Unit)? = null
 ) {
-    val monthList = CalendarMessage.monthList
+    val monthList = CalendarString.monthList
     val yearList = MutableList(4000) { (it + 1).toString() }
     val y = yearList[yearPickerIndex.intValue]
     val m = monthList[monthPickerIndex.intValue]
@@ -551,90 +551,86 @@ private fun CalendarHorizontalPager(
     selectedDate: Calendar,
     onSelectDate: ((itemSelected: Calendar) -> Unit)? = null
 ) {
-    Box(
+    HorizontalPager(
         modifier = Modifier,
-    ) {
-        HorizontalPager(
-            modifier = Modifier,
-            state = pagerState,
-            pageSpacing = 0.dp,
-            userScrollEnabled = true,
-            reverseLayout = false,
-            contentPadding = PaddingValues(0.dp),
-            beyondBoundsPageCount = 0,
-            pageSize = PageSize.Fill,
-            flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-            key = null,
-            pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-                Orientation.Horizontal
-            ),
-            pageContent = {
-                val pageEachIndex = it - startPage
-                val calendarEach = getCalendar(1, month, year, pageEachIndex)
-                val maxDayOfMonth = calendarEach.getActualMaximum(Calendar.DAY_OF_MONTH)
-                val maxDayOfWeek = calendarEach.getActualMaximum(Calendar.DAY_OF_WEEK)
-                val dayWeek = calendarEach.get(Calendar.DAY_OF_WEEK)
-                val selectedMonth = selectedDate.get(Calendar.MONTH)
-                val currentMonth = calendarEach.get(Calendar.MONTH)
-                val selectedYear = selectedDate.get(Calendar.YEAR)
-                val currentYear = calendarEach.get(Calendar.YEAR)
+        state = pagerState,
+        pageSpacing = 0.dp,
+        userScrollEnabled = true,
+        reverseLayout = false,
+        contentPadding = PaddingValues(0.dp),
+        beyondBoundsPageCount = 0,
+        pageSize = PageSize.Fill,
+        flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+        key = null,
+        pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+            Orientation.Horizontal
+        ),
+        pageContent = {
+            val pageEachIndex = it - startPage
+            val calendarEach = getCalendar(1, month, year, pageEachIndex)
+            val maxDayOfMonth = calendarEach.getActualMaximum(Calendar.DAY_OF_MONTH)
+            val maxDayOfWeek = calendarEach.getActualMaximum(Calendar.DAY_OF_WEEK)
+            val dayWeek = calendarEach.get(Calendar.DAY_OF_WEEK)
+            val selectedMonth = selectedDate.get(Calendar.MONTH)
+            val currentMonth = calendarEach.get(Calendar.MONTH)
+            val selectedYear = selectedDate.get(Calendar.YEAR)
+            val currentYear = calendarEach.get(Calendar.YEAR)
 
-                val dayWeekIndex = dayWeek - 2
-                val offsetDay = maxDayOfMonth + dayWeek - 1
-                val maxRow = ceil(offsetDay / 7.0).toInt()
+            val dayWeekIndex = dayWeek - 2
+            val offsetDay = maxDayOfMonth + dayWeek - 1
+            val maxRow = ceil(offsetDay / 7.0).toInt()
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(maxDayOfWeek),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items((maxRow + maxDayOfWeek) + maxDayOfMonth) { index ->
-                        val day =
-                            (index - dayWeekIndex).takeIf { it in 1..maxDayOfMonth }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(maxDayOfWeek),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items((maxRow + maxDayOfWeek) + maxDayOfMonth) { index ->
+                    val day =
+                        (index - dayWeekIndex).takeIf { it in 1..maxDayOfMonth }
 
-                        val isMatch =
-                            selectedDate.get(Calendar.DAY_OF_MONTH) == day
-                                    && currentMonth == selectedMonth
-                                    && currentYear == selectedYear
+                    val isMatch =
+                        selectedDate.get(Calendar.DAY_OF_MONTH) == day
+                                && currentMonth == selectedMonth
+                                && currentYear == selectedYear
 
-                        Box(
-                            Modifier.wrapContentSize()
-                        ) {
-                            var selectModify = Modifier
-                                .size(30.dp)
-                                .align(Alignment.Center)
-                                .clip(CircleShape)
-                            if (isMatch) {
-                                selectModify =
-                                    selectModify.background(Color(CalendarColor.ColorSecond))
-                            }
-                            Box(modifier = selectModify)
-                            Text(
-                                text = day?.let { text -> "$text" } ?: "",
-                                color = if (isMatch) Color(CalendarColor.Primary400) else Color.Black,
-                                textAlign = TextAlign.Center,
-                                style = AmazeTypography.Body1,
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                    ) {
-                                        day?.let {
-                                            val itemCalendar = getCalendar(
-                                                it,
-                                                calendarEach.get(Calendar.MONTH),
-                                                calendarEach.get(Calendar.YEAR),
-                                                0,
-                                            )
-                                            onSelectDate?.invoke(itemCalendar)
-                                        }
-                                    },
-                            )
+                    Box(
+                        Modifier.wrapContentSize()
+                    ) {
+                        var selectModify = Modifier
+                            .size(30.dp)
+                            .align(Alignment.Center)
+                            .clip(CircleShape)
+                        if (isMatch) {
+                            selectModify =
+                                selectModify.background(Color(CalendarColor.ColorSecond))
                         }
+                        Box(modifier = selectModify)
+                        Text(
+                            text = day?.let { text -> "$text" } ?: "",
+                            color = if (isMatch) Color(CalendarColor.Primary400) else Color.Black,
+                            textAlign = TextAlign.Center,
+                            style = AmazeTypography.Body1,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) {
+                                    day?.let {
+                                        val itemCalendar = getCalendar(
+                                            it,
+                                            calendarEach.get(Calendar.MONTH),
+                                            calendarEach.get(Calendar.YEAR),
+                                            0,
+                                        )
+                                        onSelectDate?.invoke(itemCalendar)
+                                    }
+                                },
+                        )
                     }
                 }
-            })
-    }
+            }
+        })
 }
 
 @Composable
@@ -645,7 +641,8 @@ private fun ShowMonthPicker(
     val yearList = MutableList(4000) { (it + 1).toString() }
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .height(200.dp)
             .background(Color.White)
             .padding(vertical = 24.dp),
         contentAlignment = Alignment.Center,
@@ -655,7 +652,7 @@ private fun ShowMonthPicker(
                 modifier = Modifier
                     .weight(1f),
             ) {
-                CircularWheelPicker(CalendarMessage.monthList, monthPickerIndex)
+                CircularWheelPicker(CalendarString.monthList, monthPickerIndex)
             }
             Box(
                 modifier = Modifier
@@ -688,7 +685,7 @@ private fun Header(modifier: Modifier) {
     Row(
         modifier = modifier,
     ) {
-        CalendarMessage.dayList.forEach {
+        CalendarString.dayList.forEach {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -794,7 +791,6 @@ fun CircularWheelPicker(
                     position
                 }
 
-
                 var itemYPosition by remember {
                     mutableFloatStateOf(0f)
                 }
@@ -850,31 +846,31 @@ fun CircularWheelPicker(
 
 object AmazeTypography {
     val H3
-        @Composable get() = BaseTypographyBold().copy(
+        @Composable get() = baseTypographyBold().copy(
             lineHeight = 29.dp.toSp(),
             fontSize = 24.dp.toSp(),
         )
 
     val H4
-        @Composable get() = BaseTypographyBold().copy(
+        @Composable get() = baseTypographyBold().copy(
             lineHeight = 25.dp.toSp(),
             fontSize = 20.dp.toSp(),
         )
 
     val Body1
-        @Composable get() = BaseTypographyRegular().copy(
+        @Composable get() = baseTypographyRegular().copy(
             lineHeight = 23.dp.toSp(),
             fontSize = 18.dp.toSp(),
         )
 
 
     @Composable
-    private fun BaseTypographyRegular() = TextStyle(
+    private fun baseTypographyRegular() = TextStyle(
         color = Color(CalendarColor.Natural400)
     )
 
     @Composable
-    private fun BaseTypographyBold() = TextStyle(
+    private fun baseTypographyBold() = TextStyle(
         color = Color(CalendarColor.Natural400)
     )
 }
@@ -889,33 +885,62 @@ object CalendarColor {
     val Natural400: Int = "#444444".toColorInt()
 }
 
-object CalendarMessage {
-    const val OK = "Ok"
-    const val CANCEL = "Cancel"
+object CalendarString {
+    val OK = if (isThaiCalendar()) "ตกลง" else "Ok"
+    val CANCEL = if (isThaiCalendar()) "ยกเลิก" else "Cancel"
 
-    val dayList = listOf(
-        "อา.",
-        "จ.",
-        "อ.",
-        "พ.",
-        "พฤ.",
-        "ศ.",
-        "ส."
-    )
+    val dayList = if (isThaiCalendar()) {
+        listOf(
+            "อา.",
+            "จ.",
+            "อ.",
+            "พ.",
+            "พฤ.",
+            "ศ.",
+            "ส."
+        )
+    } else {
+        listOf(
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+        )
+    }
 
-    val monthList = listOf(
-        "มกราคม",
-        "กุมภาพันธ์",
-        "มีนาคม",
-        "เมษายน",
-        "พฤษภาคม",
-        "มิถุนายน",
-        "กรกฎาคม",
-        "สิงหาคม",
-        "กันยายน",
-        "ตุลาคม",
-        "พฤศจิกายน",
-        "ธันวาคม"
-    )
+    val monthList = if (isThaiCalendar()) {
+        listOf(
+            "มกราคม",
+            "กุมภาพันธ์",
+            "มีนาคม",
+            "เมษายน",
+            "พฤษภาคม",
+            "มิถุนายน",
+            "กรกฎาคม",
+            "สิงหาคม",
+            "กันยายน",
+            "ตุลาคม",
+            "พฤศจิกายน",
+            "ธันวาคม"
+        )
+    } else {
+        listOf(
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        )
+    }
 }
 
