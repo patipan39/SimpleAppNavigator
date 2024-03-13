@@ -3,7 +3,6 @@ package com.dev.ipati.simplecomposenavigate.core
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -144,7 +143,7 @@ class CalendarPicker : DialogFragment() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ModalBottomCalendarPreview() {
     ModalBottomCalendar("ระบุวันเกิด")
@@ -206,64 +205,20 @@ fun ModalBottomCalendar(
                 contentAlignment = Alignment.Center
             ) {
                 Column {
-                    if (title != null) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                        ) {
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = title,
-                                style = AmazeTypography.Body1,
-                                textAlign = TextAlign.Center,
-                            )
-                            Row {
-                                Text(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = rememberRipple(
-                                                color = Color(CalendarColor.Primary400),
-                                            )
-                                        ) {
-                                            coroutineScope.launch {
-                                                scaffoldState.bottomSheetState.hide()
-                                            }
-                                        }
-                                        .padding(horizontal = 12.dp),
-                                    text = CalendarMessage.CANCEL,
-                                    color = Color(CalendarColor.Primary400),
-                                    style = AmazeTypography.Body1,
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    modifier = Modifier
-                                        .wrapContentWidth()
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = rememberRipple(
-                                                color = Color(CalendarColor.Primary400),
-                                            )
-                                        ) {
-                                            coroutineScope.launch {
-                                                if (isShowMonthState.value) {
-                                                    isShowMonthState.value = !isShowMonthState.value
-                                                } else {
-                                                    onDateSelectedCallBack(selectedDateState.value)
-                                                    scaffoldState.bottomSheetState.hide()
-                                                }
-                                            }
-                                        }
-                                        .padding(horizontal = 12.dp),
-                                    text = CalendarMessage.OK,
-                                    color = Color(CalendarColor.Primary400),
-                                    style = AmazeTypography.Body1,
-                                )
+                    CalendarHeader(title = title, onHide = {
+                        coroutineScope.launch {
+                            scaffoldState.bottomSheetState.hide()
+                        }
+                    }, onAccepted = {
+                        coroutineScope.launch {
+                            if (isShowMonthState.value) {
+                                isShowMonthState.value = !isShowMonthState.value
+                            } else {
+                                onDateSelectedCallBack(selectedDateState.value)
+                                scaffoldState.bottomSheetState.hide()
                             }
                         }
-                    }
+                    })
                     CalendarView(
                         isShowMonthState = isShowMonthState,
                         inputCalendar = inputCalendar,
@@ -285,6 +240,61 @@ fun ModalBottomCalendar(
                     scaffoldState.bottomSheetState.hide()
                 }
             })
+    }
+}
+
+@Composable
+private fun CalendarHeader(
+    title: String?,
+    onHide: (() -> Unit)? = null,
+    onAccepted: (() -> Unit)? = null
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = title.orEmpty(),
+            style = AmazeTypography.Body1,
+            textAlign = TextAlign.Center,
+        )
+        Row {
+            Text(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple(
+                            color = Color(CalendarColor.Primary400),
+                        )
+                    ) {
+                        onHide?.invoke()
+                    }
+                    .padding(horizontal = 12.dp),
+                text = CalendarMessage.CANCEL,
+                color = Color(CalendarColor.Primary400),
+                style = AmazeTypography.Body1,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple(
+                            color = Color(CalendarColor.Primary400),
+                        )
+                    ) {
+                        onAccepted?.invoke()
+                    }
+                    .padding(horizontal = 12.dp),
+                text = CalendarMessage.OK,
+                color = Color(CalendarColor.Primary400),
+                style = AmazeTypography.Body1,
+            )
+        }
     }
 }
 
@@ -330,7 +340,7 @@ fun CalendarView(
         initialPage = startPage,
         initialPageOffsetFraction = 0f
     ) {
-        startPage
+        startPage.plus(1)
     }
     val coroutineScope = rememberCoroutineScope()
     var selectedDate by selectedDateState
@@ -696,7 +706,8 @@ private fun Header(modifier: Modifier) {
     }
 }
 
-const val isLoopEnabled = false
+const
+val isLoopEnabled = false
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -761,7 +772,10 @@ fun CircularWheelPicker(
             { _, _, _ -> offset.toPx().toInt() }
 
         val snappingLayout = remember(key1 = scrollState) {
-            SnapLayoutInfoProvider(lazyListState = scrollState, positionInLayout = positionInLayout)
+            SnapLayoutInfoProvider(
+                lazyListState = scrollState,
+                positionInLayout = positionInLayout
+            )
         }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -790,7 +804,8 @@ fun CircularWheelPicker(
                         .align(Alignment.Center)
                         .onGloballyPositioned { coordinates ->
                             itemYPosition = coordinates.positionInParent().y
-                            contentHeightDp = with(localDensity) { coordinates.size.height.toDp() }
+                            contentHeightDp =
+                                with(localDensity) { coordinates.size.height.toDp() }
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -798,7 +813,8 @@ fun CircularWheelPicker(
                         modifier = Modifier
                             .graphicsLayer {
                                 if (offset != 0.dp) {
-                                    rotationX = (offset.toPx() - itemYPosition) / offset.toPx() * 60
+                                    rotationX =
+                                        (offset.toPx() - itemYPosition) / offset.toPx() * 60
                                 }
                             },
                         text = items[index],
@@ -833,7 +849,6 @@ fun CircularWheelPicker(
 }
 
 object AmazeTypography {
-
     val H3
         @Composable get() = BaseTypographyBold().copy(
             lineHeight = 29.dp.toSp(),
